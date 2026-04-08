@@ -1,0 +1,61 @@
+name: Auto-update mastracode formula
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check for new version
+        id: check
+        run: |
+          LATEST=$(npm view mastracode version)
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          CURRENT=$(grep -oP '^\s*url.*mastracode-\K[0-9]+\.[0-9]+\.[0-9]+' Formula/mastracode.rb)
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          if [ "$LATEST" != "$CURRENT" ]; then
+            echo "needs_update=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update formula
+        if: steps.check.outputs.needs_update == 'true'
+        env:
+          LATEST: ${{ steps.check.outputs.latest }}
+          CURRENT: ${{ steps.check.outputs.current }}
+        run: |
+          TARBALL_URL="https://registry.npmjs.org/mastracode/-/mastracode-${LATEST}.tgz"
+          SHA256=$(curl -sL "$TARBALL_URL" | shasum -a 256 | awk '{print $1}')
+          sed -i "s|mastracode-${CURRENT}.tgz|mastracode-${LATEST}.tgz|g" Formula/mastracode.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/mastracode.rb
+
+      - name: Create pull request
+        if: steps.check.outputs.needs_update == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "mastracode ${{ steps.check.outputs.latest }}"
+          title: "mastracode ${{ steps.check.outputs.latest }}"
+          body: |
+            Automated formula update.
+
+            **${{ steps.check.outputs.current }}** → **${{ steps.check.outputs.latest }}**
+
+            - npm: https://www.npmjs.com/package/mastracode
+            - Changelog: https://github.com/mastra-ai/mastra/releases
+          branch: update/mastracode-${{ steps.check.outputs.latest }}
+          labels: auto-update

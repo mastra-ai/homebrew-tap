@@ -1,0 +1,20 @@
+name: CI — Validate formula
+
+on:
+  push:
+    branches: [main]
+    paths: ["Formula/**"]
+  pull_request:
+    paths: ["Formula/**"]
+
+jobs:
+  audit:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Homebrew/actions/setup-homebrew@master
+      - run: brew audit --formula --strict Formula/mastracode.rb
+      - name: Test install
+        run: |
+          brew install --formula Formula/mastracode.rb
+          mastracode --version
