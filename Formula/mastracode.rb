@@ -16,9 +16,12 @@ class Mastracode < Formula
     system "npm", "install", *std_npm_args
 
     # Remove prebuilt binaries for non-native architectures to satisfy brew audit
-    prebuilds = libexec.glob("lib/node_modules/mastracode/**/prebuilds/**")
+    prebuilds = libexec.glob("lib/node_modules/mastracode/**/prebuilds/*")
     prebuilds.each do |dir|
-      next if dir.basename.to_s.include?(Hardware::CPU.arch.to_s)
+      arch = Hardware::CPU.arch.to_s
+      # Map x86_64 to x64 to match npm prebuild naming convention
+      arch = "x64" if arch == "x86_64"
+      next if dir.basename.to_s.include?(arch)
       rm_r(dir) if dir.directory?
     end
 
