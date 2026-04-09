@@ -4,12 +4,12 @@ Official Homebrew tap for [Mastra Code](https://code.mastra.ai/).
 
 ## Install
 
-\```bash
+```bash
 brew install mastra-ai/tap/mastracode
-\```
+```
 
 ## Upgrade
 
-\```bash
+```bash
 brew upgrade mastracode
-\```
+```
