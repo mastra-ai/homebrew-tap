@@ -1,8 +1,8 @@
 class Mastracode < Formula
   desc "Terminal-based AI coding agent built with Mastra"
   homepage "https://code.mastra.ai/"
-  url "https://registry.npmjs.org/mastracode/-/mastracode-0.12.1.tgz"
-  sha256 "5808e18f160df1282de49822abed15b4a53ef817b3f09f448e62ceaa327b6840"
+  url "https://registry.npmjs.org/mastracode/-/mastracode-0.50.2.tgz"
+  sha256 "f8990ab7c60bd66f6f30f0dd1689619120e2f6e19736218ce4d634c58e9472b9"
   license "BUSL-1.1"
 
   livecheck do
